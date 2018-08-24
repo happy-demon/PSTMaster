@@ -24,6 +24,11 @@ namespace PSTMaster
                 DisplayHelp();
             }
 
+            else if (CommandLine["mode"] == null || CommandLine["jobname"] == null || CommandLine["location"] == null || CommandLine["collectpath"] == null)
+            {
+                PrintError("Looks like one or more paramters missed.");
+            }
+
             else
             {
                 string mode = CommandLine["mode"].ToLower();
@@ -55,6 +60,11 @@ namespace PSTMaster
                     Console.WriteLine("The process failed: {0}", e.ToString());
                 }
 
+                if (!collectpath.EndsWith("\\"))
+                {
+                    collectpath += "\\";
+                }
+
                 if (mode != null && jobname != null && location != null && collectpath != null)
                 {
                     dropfile(fullogpath);
@@ -70,6 +80,7 @@ namespace PSTMaster
                 else
                 {
                     PrintError("Looks like there is a paramter missing");
+                    Environment.Exit(1);
                 }
 
                 CopyFile(logfile, configpath, collectpath);
@@ -411,13 +422,13 @@ namespace PSTMaster
             "",
             "",
             ".EXAMPLE",
-            "PSTMaster.exe -mode Find -jobname myjob -locations C: -collectpath C:",
+            "PSTMaster.exe -mode Find -jobname myjob -location C: -collectpath C:",
             ".EXAMPLE",
-            "PSTMaster.exe -mode Find -jobname myjob -locations alllocal -collectpath \\\\SharePath",
+            "PSTMaster.exe -mode Find -jobname myjob -location alllocal -collectpath \\\\SharePath",
             ".EXAMPLE",
-            "PSTMaster.exe -mode Collect -jobname myjob -locations alllocal -collectpath \\\\SharePath",
+            "PSTMaster.exe -mode Collect -jobname myjob -location alllocal -collectpath \\\\SharePath",
             ".EXAMPLE",
-            "PSTMaster.exe -mode Remove -jobname myjob -locations alllocal -collectpath \\\\SharePath"
+            "PSTMaster.exe -mode Remove -jobname myjob -location alllocal -collectpath \\\\SharePath"
             };
 
             foreach (string line in lines)
