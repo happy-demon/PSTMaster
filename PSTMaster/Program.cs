@@ -96,39 +96,30 @@ namespace PSTMaster
 
                 WriteLog(configpath, logfile, message);
 
-                try
+                dropfile(outputfilename);
+
+                List<string> files = SearchFile.Search(locationpath);
+
+                using (StreamWriter text = new StreamWriter(configpath + outputfilename))
                 {
-                    dropfile(outputfilename);
-
-                    List<string> files = SearchFile.Search(locationpath);
-
-                    using (StreamWriter text = new StreamWriter(configpath + outputfilename))
+                    if ((files != null) && (files.Any()))
                     {
-                        if ((files != null) && (files.Any()))
-                        {
-                            text.WriteLine("ComputerName, FilePath");
+                        text.WriteLine("ComputerName, FilePath");
 
-                            foreach (string f in files)
-                            {
-                                //Console.WriteLine("File Found:{0}", f);
-                                text.WriteLine("{0},\"{1}\"", computername, f);
-                            }
-                        }
-
-                        else
+                        foreach (string f in files)
                         {
-                            text.WriteLine("Search operaton completed but no .pst file being found");
+                            //Console.WriteLine("File Found:{0}", f);
+                            text.WriteLine("{0},\"{1}\"", computername, f);
                         }
                     }
 
-                    CopyFile(outputfilename, configpath, collectpath);
+                    else
+                    {
+                        text.WriteLine("Search operaton completed but no .pst file being found");
+                    }
                 }
 
-                catch (Exception e)
-                {
-                    PrintError("Exception in Find mode:" + e.Message);
-                    WriteLog(configpath, logfile, "Exception in Find mode:" + e.Message);
-                }
+                CopyFile(outputfilename, configpath, collectpath);
 
                 WriteLog(configpath, logfile, "Find operation completed, please check output in the csv file");
             }
@@ -138,65 +129,56 @@ namespace PSTMaster
                 string message = "Start Collect mode....";
                 WriteLog(configpath, logfile, message);
 
-                try
+                dropfile(outputfilename);
+
+                //string logfile=string.Format("{0}.{1}.txt", computername, jobname);
+
+                List<string> files = SearchFile.Search(locationpath);
+
+                using (StreamWriter text = new StreamWriter(configpath + outputfilename))
                 {
-                    dropfile(outputfilename);
-
-                    //string logfile=string.Format("{0}.{1}.txt", computername, jobname);
-
-                    List<string> files = SearchFile.Search(locationpath);
-
-                    using (StreamWriter text = new StreamWriter(configpath + outputfilename))
+                    if ((files != null) && (files.Any()))
                     {
-                        if ((files != null) && (files.Any()))
-                        {
-                            text.WriteLine("ComputerName, FilePath, Collected");
+                        text.WriteLine("ComputerName, FilePath, Collected");
 
-                            foreach (string f in files)
+                        foreach (string f in files)
+                        {
+                            string flag = null;
+                            FileInfo fileinfo = new FileInfo(f);
+                            string filename = fileinfo.Name;
+                            string dir = System.IO.Path.GetDirectoryName(f);
+                            string partdir = dir.ToString().Replace(":", "");
+                            string finalpath = partdir.TrimEnd('\\');
+                            string destpath = string.Format("{0}\\{1}\\{2}\\{3}", collectpath, jobname, computername, finalpath);
+                            string destFile = System.IO.Path.Combine(destpath, filename);
+
+                            //Console.WriteLine("the partdir is :{0}, the final dir is {1},the destpath is {2}", partdir, finalpath, destpath);
+
+                            CopyFile(filename, dir, destpath);
+
+                            if (File.Exists(destFile))
                             {
-                                string flag = null;
-                                FileInfo fileinfo = new FileInfo(f);
-                                string filename = fileinfo.Name;
-                                string dir = System.IO.Path.GetDirectoryName(f);
-                                string partdir = dir.ToString().Replace(":", "");
-                                string finalpath = partdir.TrimEnd('\\');
-                                string destpath = string.Format("{0}\\{1}\\{2}\\{3}", collectpath, jobname, computername, finalpath);
-                                string destFile = System.IO.Path.Combine(destpath, filename);
+                                Console.WriteLine("The file: {0} successfully been copied to the collect path: {1}", f, collectpath);
 
-                                //Console.WriteLine("the partdir is :{0}, the final dir is {1},the destpath is {2}", partdir, finalpath, destpath);
-
-                                CopyFile(filename, dir, destpath);
-
-                                if (File.Exists(destFile))
-                                {
-                                    Console.WriteLine("The file: {0} successfully been copied to the collect path: {1}", f, collectpath);
-
-                                    flag = "Success";
-                                }
-
-                                else
-                                {
-                                    flag = "Failed";
-                                }
-
-                                text.WriteLine("{0},\"{1}\",{2}", computername, f, flag);
+                                flag = "Success";
                             }
-                        }
 
-                        else
-                        {
-                            text.WriteLine("Search operaton completed but no .pst file being found");
+                            else
+                            {
+                                flag = "Failed";
+                            }
+
+                            text.WriteLine("{0},\"{1}\",{2}", computername, f, flag);
                         }
                     }
 
-                    CopyFile(outputfilename, configpath, collectpath);
+                    else
+                    {
+                        text.WriteLine("Search operaton completed but no .pst file being found");
+                    }
                 }
 
-                catch (Exception e)
-                {
-                    PrintError("Exception in Collect mode:" + e.Message);
-                    WriteLog(configpath, logfile, "Exception in Collect mode:" + e.Message);
-                }
+                CopyFile(outputfilename, configpath, collectpath);
 
                 WriteLog(configpath, logfile, "Collect operation completed, please check output in the csv file");
             }
@@ -206,62 +188,53 @@ namespace PSTMaster
                 string message = "Start Remove mode....";
                 WriteLog(configpath, logfile, message);
 
-                try
+                dropfile(outputfilename);
+
+                List<string> files = SearchFile.Search(locationpath);
+
+                using (StreamWriter text = new StreamWriter(configpath + outputfilename))
                 {
-                    dropfile(outputfilename);
-
-                    List<string> files = SearchFile.Search(locationpath);
-
-                    using (StreamWriter text = new StreamWriter(configpath + outputfilename))
+                    if ((files != null) && (files.Any()))
                     {
-                        if ((files != null) && (files.Any()))
-                        {
-                            text.WriteLine("ComputerName, FilePath, Removed");
+                        text.WriteLine("ComputerName, FilePath, Removed");
 
-                            foreach (string f in files)
+                        foreach (string f in files)
+                        {
+                            string flag = null;
+                            FileInfo fileinfo = new FileInfo(f);
+                            string filename = fileinfo.Name;
+                            string dir = System.IO.Path.GetDirectoryName(f);
+                            string partdir = dir.ToString().Replace(":", "");
+                            string finalpath = partdir.TrimEnd('\\').TrimStart('\\');
+                            string destpath = string.Format("{0}\\{1}\\{2}\\{3}", collectpath, jobname, computername, finalpath);
+                            string destFile = System.IO.Path.Combine(destpath, filename);
+
+                            if (File.Exists(destFile))
                             {
-                                string flag = null;
-                                FileInfo fileinfo = new FileInfo(f);
-                                string filename = fileinfo.Name;
-                                string dir = System.IO.Path.GetDirectoryName(f);
-                                string partdir = dir.ToString().Replace(":", "");
-                                string finalpath = partdir.TrimEnd('\\').TrimStart('\\');
-                                string destpath = string.Format("{0}\\{1}\\{2}\\{3}", collectpath, jobname, computername, finalpath);
-                                string destFile = System.IO.Path.Combine(destpath, filename);
+                                File.Delete(f);
 
-                                if (File.Exists(destFile))
+                                if (!File.Exists(f))
                                 {
-                                    File.Delete(f);
-
-                                    if (!File.Exists(f))
-                                    {
-                                        Console.WriteLine("The file:{0} has successfully been removed", f); flag = "Success";
-                                    }
+                                    Console.WriteLine("The file:{0} has successfully been removed", f); flag = "Success";
                                 }
-
-                                else
-                                {
-                                    Console.WriteLine("File:{0} has not been copyied to {1} yet, please run collect mode first", f, destpath); flag = "Failed";
-                                }
-
-                                text.WriteLine("{0},\"{1}\",{2}", computername, f, flag);
                             }
-                        }
 
-                        else
-                        {
-                            text.WriteLine("Search operaton completed but no .pst file being found");
+                            else
+                            {
+                                Console.WriteLine("File:{0} has not been copyied to {1} yet, please run collect mode first", f, destpath); flag = "Failed";
+                            }
+
+                            text.WriteLine("{0},\"{1}\",{2}", computername, f, flag);
                         }
                     }
 
-                    CopyFile(outputfilename, configpath, collectpath);
+                    else
+                    {
+                        text.WriteLine("Search operaton completed but no .pst file being found");
+                    }
                 }
 
-                catch (Exception e)
-                {
-                    PrintError("Exception in Remove mode:" + e.Message);
-                    WriteLog(configpath, logfile, "Exception in Remove mode:" + e.Message);
-                }
+                CopyFile(outputfilename, configpath, collectpath);
 
                 WriteLog(configpath, logfile, "Remove operation completed, please check output in the csv file");
             }
@@ -293,7 +266,7 @@ namespace PSTMaster
         {
             public static List<string> Search(string Loc)
             {
-                List<string> filegroup = null;
+                List<string> filegroup = new List<string>();
 
                 if (Loc == "alllocal")
                 {
@@ -305,7 +278,16 @@ namespace PSTMaster
                         {
                             string driveLetter = drvinfo.Name.ToString();
 
-                            filegroup = ApplyAllFiles(driveLetter);
+                            try
+                            {
+                                filegroup.AddRange(ApplyAllFiles(driveLetter));
+                            }
+
+                            catch (Exception e)
+                            {
+                                PrintError("Exception:" + e.Message);
+                                //WriteLog(configpath, logfile, "Exception in Find mode:" + e.Message);
+                            }
                         }
                     }
                 }
@@ -316,7 +298,16 @@ namespace PSTMaster
                     {
                         Loc += "\\";
 
-                        filegroup = ApplyAllFiles(Loc);
+                        try
+                        {
+                            filegroup = ApplyAllFiles(Loc);
+                        }
+
+                        catch (Exception e)
+                        {
+                            PrintError("Exception" + e.Message);
+                            //WriteLog(configpath, logfile, "Exception in Find mode:" + e.Message);
+                        }
                     }
                 }
 
